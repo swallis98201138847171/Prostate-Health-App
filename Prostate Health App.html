@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prostate Health Tracker</title>
+  <!-- Bootstrap CSS for styling -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Chart.js for charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      padding-top: 20px;
+      background-color: #f4f6f8;
+      font-family: 'Arial', sans-serif;
+    }
+    .card {
+      margin-bottom: 20px;
+      border-radius: .75rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .chart-container {
+      position: relative;
+      height: 400px;
+    }
+
+      /* Metric cards styling */
+      .metric-card {
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+      .metric-card i {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        color: #007bff;
+      }
+      .metric-card h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .metric-card p {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0;
+      }
+
+      /* Progress bar colors for severity */
+      .progress-bar-mild {
+        background-color: #28a745;
+      }
+      .progress-bar-moderate {
+        background-color: #ffc107;
+      }
+      .progress-bar-severe {
+        background-color: #dc3545;
+      }
+
+      /* Base progress track styling */
+      .progress {
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+      }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4">Prostate Health Tracker</h1>
+
+    <!-- IPSS Calculator Form -->
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        IPSS Calculator
+      </div>
+      <div class="card-body">
+        <form id="ipssForm">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="ipssDate">Date</label>
+              <input type="date" class="form-control" id="ipssDate" required>
+            </div>
+          </div>
+          <!-- Symptom score inputs -->
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label for="incompleteEmptying">Incomplete emptying (0–5)</label>
+              <select id="incompleteEmptying" class="form-control" required></select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="frequency">Frequency (0–5)</label>
+              <select id="frequency" class="form-control" required></select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="intermittency">Intermittency (0–5)</label>
+              <select id="intermittency" class="form-control" required></select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="urgency">Urgency (0–5)</label>
+              <select id="urgency" class="form-control" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label for="weakStream">Weak stream (0–5)</label>
+              <select id="weakStream" class="form-control" required></select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="straining">Straining (0–5)</label>
+              <select id="straining" class="form-control" required></select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="nocturia">Nocturia (0–5)</label>
+              <select id="nocturia" class="form-control" required></select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="qualityOfLife">Quality of Life (0–6)</label>
+              <select id="qualityOfLife" class="form-control" required></select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success">Add IPSS Entry</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Symptom Tracker Form -->
+    <div class="card">
+      <div class="card-header bg-secondary text-white">
+        Symptom & Lifestyle Tracker
+      </div>
+      <div class="card-body">
+        <form id="symptomForm">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="symptomDate">Date</label>
+              <input type="date" class="form-control" id="symptomDate" required>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="fluidIntake">Fluid intake (L)</label>
+              <input type="number" step="0.1" min="0" class="form-control" id="fluidIntake" required>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="caffeineAlcohol">Caffeine/Alcohol</label>
+              <select id="caffeineAlcohol" class="form-control" required>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label for="dayUrination">Daytime urinations</label>
+              <input type="number" min="0" class="form-control" id="dayUrination" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="nightUrination">Night-time urinations</label>
+              <input type="number" min="0" class="form-control" id="nightUrination" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="urgencyEpisodes">Urgency episodes</label>
+              <input type="number" min="0" class="form-control" id="urgencyEpisodes" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="painDiscomfort">Pain/Discomfort</label>
+              <select id="painDiscomfort" class="form-control" required>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label for="exercise">Exercise</label>
+              <select id="exercise" class="form-control" required>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="form-group col-md-9">
+              <label for="symptomComments">Comments</label>
+              <input type="text" class="form-control" id="symptomComments">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-secondary">Add Symptom Entry</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="card">
+      <div class="card-header bg-dark text-white">
+        Dashboard
+      </div>
+      <div class="card-body">
+        <!-- Top metrics row -->
+        <div class="row text-center">
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-calendar-check"></i>
+              <h6>Days Tracked</h6>
+              <p id="daysTracked">0</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-chart-line"></i>
+              <h6>Avg IPSS Score</h6>
+              <p id="avgIPSS">0</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-th-list"></i>
+              <h6>Severity Counts</h6>
+              <p id="severityCounts">Mild: 0 | Moderate: 0 | Severe: 0</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-percent"></i>
+              <h6>Severity %</h6>
+              <p id="severityPercent">Mild: 0% | Moderate: 0% | Severe: 0%</p>
+            </div>
+          </div>
+        </div>
+        <!-- Severity distribution progress bar -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="progress mb-3" style="height: 0.5rem;">
+              <div id="progressMild" class="progress-bar progress-bar-mild" role="progressbar" style="width: 0%"></div>
+              <div id="progressModerate" class="progress-bar progress-bar-moderate" role="progressbar" style="width: 0%"></div>
+              <div id="progressSevere" class="progress-bar progress-bar-severe" role="progressbar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Lifestyle averages row -->
+        <div class="row text-center">
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-tint"></i>
+              <h6>Avg Fluid Intake</h6>
+              <p id="avgFluid">0 L</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-clock"></i>
+              <h6>Avg Day Urination</h6>
+              <p id="avgDayU">0</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-moon"></i>
+              <h6>Avg Night Urination</h6>
+              <p id="avgNightU">0</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="metric-card">
+              <i class="fas fa-exclamation-circle"></i>
+              <h6>Avg Urgency Episodes</h6>
+              <p id="avgUrgency">0</p>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="chart-container">
+              <canvas id="ipssLineChart"></canvas>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="chart-container">
+              <canvas id="lifestyleBarChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-md-12 text-right">
+            <button class="btn btn-danger" id="resetData">Reset Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript logic -->
+  <script>
+    // Populate select options for IPSS scores and QoL
+    function populateSelect(id, max) {
+      const select = document.getElementById(id);
+      select.innerHTML = '';
+      for (let i = 0; i <= max; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        select.appendChild(option);
+      }
+    }
+    // Setup selects on load
+    ['incompleteEmptying','frequency','intermittency','urgency','weakStream','straining','nocturia'].forEach(id => populateSelect(id, 5));
+    populateSelect('qualityOfLife', 6);
+
+    // Retrieve stored entries from localStorage
+    let entries = JSON.parse(localStorage.getItem('entries')) || [];
+
+    // Update dashboard metrics and charts
+    function updateDashboard() {
+      const ipssEntries = entries.filter(e => e.type === 'ipss');
+      const symptomEntries = entries.filter(e => e.type === 'symptom');
+
+      const daysTracked = ipssEntries.length;
+      document.getElementById('daysTracked').textContent = daysTracked;
+
+      // Average IPSS and severity counts
+      let totalIPSS = 0;
+      let mild = 0, moderate = 0, severe = 0;
+      ipssEntries.forEach(e => {
+        totalIPSS += e.total;
+        if (e.severity === 'Mild') mild++;
+        else if (e.severity === 'Moderate') moderate++;
+        else if (e.severity === 'Severe') severe++;
+      });
+      const avgIPSS = daysTracked > 0 ? (totalIPSS / daysTracked).toFixed(1) : 0;
+      document.getElementById('avgIPSS').textContent = avgIPSS;
+      document.getElementById('severityCounts').textContent = `Mild: ${mild} | Moderate: ${moderate} | Severe: ${severe}`;
+      document.getElementById('severityPercent').textContent = daysTracked > 0 ?
+        `Mild: ${(mild/daysTracked*100).toFixed(0)}% | Moderate: ${(moderate/daysTracked*100).toFixed(0)}% | Severe: ${(severe/daysTracked*100).toFixed(0)}%` :
+        'Mild: 0% | Moderate: 0% | Severe: 0%';
+
+      // Update severity progress bar widths
+      const mildPercent = daysTracked > 0 ? (mild / daysTracked * 100) : 0;
+      const moderatePercent = daysTracked > 0 ? (moderate / daysTracked * 100) : 0;
+      const severePercent = daysTracked > 0 ? (severe / daysTracked * 100) : 0;
+      document.getElementById('progressMild').style.width = mildPercent + '%';
+      document.getElementById('progressModerate').style.width = moderatePercent + '%';
+      document.getElementById('progressSevere').style.width = severePercent + '%';
+
+      // Symptom averages
+      const symptomDays = symptomEntries.length;
+      let sumFluid = 0, sumDayU = 0, sumNightU = 0, sumUrgency = 0;
+      symptomEntries.forEach(e => {
+        sumFluid += parseFloat(e.fluid);
+        sumDayU += parseFloat(e.dayU);
+        sumNightU += parseFloat(e.nightU);
+        sumUrgency += parseFloat(e.urgency);
+      });
+      document.getElementById('avgFluid').textContent = symptomDays > 0 ? (sumFluid / symptomDays).toFixed(2) + ' L' : '0 L';
+      document.getElementById('avgDayU').textContent = symptomDays > 0 ? (sumDayU / symptomDays).toFixed(1) : '0';
+      document.getElementById('avgNightU').textContent = symptomDays > 0 ? (sumNightU / symptomDays).toFixed(1) : '0';
+      document.getElementById('avgUrgency').textContent = symptomDays > 0 ? (sumUrgency / symptomDays).toFixed(1) : '0';
+
+      // Update charts
+      updateCharts(ipssEntries, symptomEntries);
+    }
+
+    let ipssChart;
+    let lifestyleChart;
+    function updateCharts(ipssEntries, symptomEntries) {
+      // Prepare data for IPSS line chart
+      const labels = ipssEntries.map(e => e.date);
+      const data = ipssEntries.map(e => e.total);
+
+      // Destroy previous chart if exists
+      if (ipssChart) ipssChart.destroy();
+      const ctx1 = document.getElementById('ipssLineChart').getContext('2d');
+      ipssChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total IPSS Score',
+            data: data,
+            fill: false,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: { display: true, text: 'Date' }
+            },
+            y: {
+              title: { display: true, text: 'IPSS Score' },
+              suggestedMin: 0,
+              suggestedMax: 35
+            }
+          }
+        }
+      });
+
+      // Prepare data for lifestyle bar chart: average of fluid, day U, night U, urgency over all entries
+      const avgFluid = symptomEntries.length > 0 ? (symptomEntries.reduce((sum, e) => sum + parseFloat(e.fluid), 0) / symptomEntries.length).toFixed(2) : 0;
+      const avgDay = symptomEntries.length > 0 ? (symptomEntries.reduce((sum, e) => sum + parseFloat(e.dayU), 0) / symptomEntries.length).toFixed(1) : 0;
+      const avgNight = symptomEntries.length > 0 ? (symptomEntries.reduce((sum, e) => sum + parseFloat(e.nightU), 0) / symptomEntries.length).toFixed(1) : 0;
+      const avgUrg = symptomEntries.length > 0 ? (symptomEntries.reduce((sum, e) => sum + parseFloat(e.urgency), 0) / symptomEntries.length).toFixed(1) : 0;
+
+      if (lifestyleChart) lifestyleChart.destroy();
+      const ctx2 = document.getElementById('lifestyleBarChart').getContext('2d');
+      lifestyleChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ['Fluid Intake (L)', 'Daytime Urination', 'Night-time Urination', 'Urgency Episodes'],
+          datasets: [{
+            label: 'Average Values',
+            data: [avgFluid, avgDay, avgNight, avgUrg],
+            backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)'],
+            borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    // Handle IPSS form submission
+    document.getElementById('ipssForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const date = document.getElementById('ipssDate').value;
+      const scores = [
+        parseInt(document.getElementById('incompleteEmptying').value),
+        parseInt(document.getElementById('frequency').value),
+        parseInt(document.getElementById('intermittency').value),
+        parseInt(document.getElementById('urgency').value),
+        parseInt(document.getElementById('weakStream').value),
+        parseInt(document.getElementById('straining').value),
+        parseInt(document.getElementById('nocturia').value)
+      ];
+      const qol = parseInt(document.getElementById('qualityOfLife').value);
+      const total = scores.reduce((a,b) => a + b, 0);
+      let severity = '';
+      if (total < 8) severity = 'Mild';
+      else if (total < 20) severity = 'Moderate';
+      else severity = 'Severe';
+      entries.push({ type: 'ipss', date, scores, qol, total, severity });
+      localStorage.setItem('entries', JSON.stringify(entries));
+      updateDashboard();
+      this.reset();
+    });
+
+    // Handle Symptom form submission
+    document.getElementById('symptomForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const date = document.getElementById('symptomDate').value;
+      const fluid = document.getElementById('fluidIntake').value;
+      const caffeineAlcohol = document.getElementById('caffeineAlcohol').value;
+      const dayU = document.getElementById('dayUrination').value;
+      const nightU = document.getElementById('nightUrination').value;
+      const urgency = document.getElementById('urgencyEpisodes').value;
+      const pain = document.getElementById('painDiscomfort').value;
+      const exercise = document.getElementById('exercise').value;
+      const comments = document.getElementById('symptomComments').value;
+      entries.push({ type: 'symptom', date, fluid, caffeineAlcohol, dayU, nightU, urgency, pain, exercise, comments });
+      localStorage.setItem('entries', JSON.stringify(entries));
+      updateDashboard();
+      this.reset();
+    });
+
+    // Reset data
+    document.getElementById('resetData').addEventListener('click', function() {
+      if (confirm('Are you sure you want to reset all data?')) {
+        entries = [];
+        localStorage.removeItem('entries');
+        updateDashboard();
+      }
+    });
+
+    // Initial dashboard update
+    updateDashboard();
+  </script>
+</body>
+</html>
