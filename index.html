@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,8 +67,57 @@
         border-radius: 0.25rem;
       }
   </style>
+
+<style>
+/* One-time user guide */
+.user-guide-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.user-guide-box {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.user-guide-box h3 {
+  margin-top: 0;
+}
+.user-guide-box p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.user-guide-box button {
+  margin-top: 12px;
+  padding: 10px 16px;
+}
+</style>
+
 </head>
 <body>
+
+<!-- Welcome Message -->
+<div class="welcome-banner" style="
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:20px;
+">
+  <h2 style="margin:0 0 8px 0;">Welcome</h2>
+  <p style="margin:0;font-size:14px;line-height:1.5;">
+    Use this tracker to log your daily prostate-related symptoms and observe trends over time.
+    Focus on patterns rather than individual days. All data stays on this device.
+  </p>
+</div>
+
   <div class="container">
     <h1 class="mb-4">Prostate Health Tracker</h1>
 
@@ -482,5 +532,43 @@
     // Initial dashboard update
     updateDashboard();
   </script>
+
+<!-- One-Time User Guide -->
+<div class="user-guide-overlay" id="userGuide">
+  <div class="user-guide-box">
+    <h3>How to Use This Tracker</h3>
+    <p>
+      This tracker is designed to help you build awareness of your prostate-related symptoms over time.
+      Each day, take a moment to enter your symptom information as accurately as possible.
+    </p>
+    <p>
+      Individual days can vary, and that’s normal. What matters most are patterns and trends that develop
+      over days and weeks, not single entries.
+    </p>
+    <p>
+      All information entered here is stored locally on your device and is not shared.
+      This tool is intended for personal tracking and education only, and can be useful when having
+      informed conversations with a healthcare professional if needed.
+    </p>
+    <button onclick="dismissGuide()">Get Started</button>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  const guide = document.getElementById('userGuide');
+  if (!localStorage.getItem('userGuideSeen')) {
+    window.addEventListener('load', function(){
+      guide.style.display = 'flex';
+    });
+  }
+  window.dismissGuide = function(){
+    localStorage.setItem('userGuideSeen', 'true');
+    guide.style.display = 'none';
+  };
+})();
+</script>
+
 </body>
 </html>
